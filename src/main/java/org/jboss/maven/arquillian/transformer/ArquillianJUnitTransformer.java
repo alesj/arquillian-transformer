@@ -82,10 +82,14 @@ public abstract class ArquillianJUnitTransformer extends JavassistTransformer {
 
     protected void addTestAnnotations(CtClass clazz) throws Exception {
         for (CtMethod m : clazz.getMethods()) {
-            if (m.getName().startsWith("test")) {
+            if (isTestMethod(m)) {
                 addTestAnnotation(clazz, m);
             }
         }
+    }
+
+    protected boolean isTestMethod(CtMethod m) throws Exception {
+        return m.getName().startsWith("test"); // TODO
     }
 
     protected void addDeploymentAnnotation(CtClass clazz, CtMethod method) throws Exception {
