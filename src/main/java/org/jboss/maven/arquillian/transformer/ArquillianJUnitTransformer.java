@@ -89,7 +89,7 @@ public abstract class ArquillianJUnitTransformer extends JavassistTransformer {
     }
 
     protected boolean isTestMethod(CtMethod m) throws Exception {
-        return m.getName().startsWith("test"); // TODO
+        return m.getName().startsWith("test") && m.getParameterTypes().length == 0 && ((m.getModifiers() & Modifier.PUBLIC) == Modifier.PUBLIC);
     }
 
     protected void addDeploymentAnnotation(CtClass clazz, CtMethod method) throws Exception {
