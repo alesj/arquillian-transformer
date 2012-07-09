@@ -33,22 +33,45 @@ import org.jboss.shrinkwrap.resolver.api.maven.MavenDependencyResolver;
  */
 public class AppEngineDataNucleusTransformer extends ArquillianJUnitTransformer {
     protected String getDeploymentMethodBody(CtClass clazz) throws Exception {
-        return "{return org.jboss.maven.arquillian.transformer.AppEngineDataNucleusTransformer.buildArchive();}";
+        return "{return org.jboss.maven.arquillian.transformer.AppEngineDataNucleusTransformer.buildArchive(\"" + clazz.getName() + "\");}";
     }
 
-    public static WebArchive buildArchive() {
+    public static WebArchive buildArchive(String clazz) {
         MavenDependencyResolver resolver = DependencyResolvers.use(MavenDependencyResolver.class).loadMetadataFromPom("pom.xml");
         WebArchive war = ShrinkWrap.create(WebArchive.class);
+        addClasses(war, clazz);
+        war.addPackage("com.google.appengine.datanucleus");
+        if (clazz.contains(".jpa.")) {
+            war.addPackage("com.google.appengine.datanucleus.test.jpa");
+        } else if (clazz.contains(".jdo.")) {
+            war.addPackage("com.google.appengine.datanucleus.test.jdo");
+        }
         war.setWebXML(new org.jboss.shrinkwrap.api.asset.StringAsset("<web/>"));
         war.addAsWebInfResource("appengine-web.xml");
         war.addAsWebInfResource("META-INF/persistence.xml", "classes/META-INF/persistence.xml");
+        // TODO -- fix this hardcoded version
+        war.addAsLibraries(resolver.artifact("com.google.appengine.orm:datanucleus-appengine:2.1.0-final").resolveAsFiles());
         war.addAsLibraries(resolver.artifact("com.google.appengine:appengine-api-1.0-sdk").resolveAsFiles());
+        war.addAsLibraries(resolver.artifact("com.google.appengine:appengine-testing").resolveAsFiles());
+        war.addAsLibraries(resolver.artifact("com.google.appengine:appengine-api-stubs").resolveAsFiles());
         war.addAsLibraries(resolver.artifact("org.datanucleus:datanucleus-core").resolveAsFiles());
         war.addAsLibraries(resolver.artifact("org.datanucleus:datanucleus-api-jdo").resolveAsFiles());
         war.addAsLibraries(resolver.artifact("org.datanucleus:datanucleus-api-jpa").resolveAsFiles());
-        war.addAsLibraries(resolver.artifact("com.google.appengine.orm:datanucleus-appengine").resolveAsFiles());
         war.addAsLibraries(resolver.artifact("javax.jdo:jdo-api").resolveAsFiles());
-        war.addAsLibraries(resolver.artifact("org.apache.geronimo.specs:geronimo-jta_2.0_spec").resolveAsFiles());
+        war.addAsLibraries(resolver.artifact("org.apache.geronimo.specs:geronimo-jpa_2.0_spec").resolveAsFiles());
         return war;
+    }
+
+    private static void addClasses(WebArchive war, String clazz) {
+        try {
+            ClassLoader cl = AppEngineDataNucleusTransformer.class.getClassLoader();
+            Class<?> current = cl.loadClass(clazz);
+            while (current != Object.class && "junit.framework.TestCase".equals(current.getName()) == false) {
+                war.addClass(current);
+                current = current.getSuperclass();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -23,6 +23,7 @@
 package org.jboss.maven.arquillian.transformer;
 
 import java.lang.reflect.Modifier;
+import java.util.Random;
 
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -35,6 +36,8 @@ import javassist.bytecode.annotation.ClassMemberValue;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -46,6 +49,7 @@ public abstract class ArquillianJUnitTransformer extends JavassistTransformer {
         addRunWithArquillian(clazz);
         addDeploymentMethod(clazz);
         addTestAnnotations(clazz);
+        addLifecycleMethods(clazz);
     }
 
     protected void addRunWithArquillian(CtClass clazz) throws Exception {
@@ -71,7 +75,7 @@ public abstract class ArquillianJUnitTransformer extends JavassistTransformer {
         CtClass archiveClass = pool.get(WebArchive.class.getName());
 
         CtMethod m = new CtMethod(archiveClass, "getDeployment", new CtClass[]{}, clazz);
-        m.setModifiers(Modifier.STATIC);
+        m.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
         addDeploymentAnnotation(clazz, m);
         m.setBody(getDeploymentMethodBody(clazz));
 
@@ -120,5 +124,40 @@ public abstract class ArquillianJUnitTransformer extends JavassistTransformer {
         attr.addAnnotation(annotation);
 
         method.getMethodInfo().addAttribute(attr);
+    }
+
+    protected void addLifecycleMethods(CtClass clazz) throws Exception {
+        Random random = new Random();
+
+        ClassPool pool = clazz.getClassPool();
+        CtClass voidClass = pool.get(Void.TYPE.getName());
+        CtClass exceptionClass = pool.get(Exception.class.getName());
+
+        ClassFile ccFile = clazz.getClassFile();
+        ConstPool constPool = ccFile.getConstPool();
+
+        CtMethod before = new CtMethod(voidClass, "before" + random.nextInt(), new CtClass[]{}, clazz);
+        before.setModifiers(Modifier.PUBLIC);
+        before.setBody("{setUp();}");
+        before.setExceptionTypes(new CtClass[]{exceptionClass});
+        AnnotationsAttribute attr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
+        String beforeClassName = Before.class.getName();
+        constPool.addUtf8Info(beforeClassName);
+        Annotation annotation = new Annotation(beforeClassName, constPool);
+        attr.addAnnotation(annotation);
+        before.getMethodInfo().addAttribute(attr);
+        clazz.addMethod(before);
+
+        CtMethod after = new CtMethod(voidClass, "after" + random.nextInt(), new CtClass[]{}, clazz);
+        after.setModifiers(Modifier.PUBLIC);
+        after.setBody("{tearDown();}");
+        after.setExceptionTypes(new CtClass[]{exceptionClass});
+        attr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
+        String afterClassName = After.class.getName();
+        constPool.addUtf8Info(afterClassName);
+        annotation = new Annotation(afterClassName, constPool);
+        attr.addAnnotation(annotation);
+        after.getMethodInfo().addAttribute(attr);
+        clazz.addMethod(after);
     }
 }
