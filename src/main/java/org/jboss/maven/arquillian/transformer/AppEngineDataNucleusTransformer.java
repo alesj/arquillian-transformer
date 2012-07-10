@@ -22,6 +22,10 @@
 
 package org.jboss.maven.arquillian.transformer;
 
+import java.lang.reflect.Method;
+
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import javassist.CtClass;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -49,6 +53,7 @@ public class AppEngineDataNucleusTransformer extends ArquillianJUnitTransformer 
         war.setWebXML(new org.jboss.shrinkwrap.api.asset.StringAsset("<web/>"));
         war.addAsWebInfResource("appengine-web.xml");
         war.addAsWebInfResource("META-INF/persistence.xml", "classes/META-INF/persistence.xml");
+        war.addAsWebInfResource("META-INF/jdoconfig.xml", "classes/META-INF/jdoconfig.xml");
         // TODO -- fix this hardcoded version
         war.addAsLibraries(resolver.artifact("com.google.appengine.orm:datanucleus-appengine:2.1.0-final").resolveAsFiles());
         war.addAsLibraries(resolver.artifact("com.google.appengine:appengine-api-1.0-sdk").resolveAsFiles());
@@ -59,6 +64,8 @@ public class AppEngineDataNucleusTransformer extends ArquillianJUnitTransformer 
         war.addAsLibraries(resolver.artifact("org.datanucleus:datanucleus-api-jpa").resolveAsFiles());
         war.addAsLibraries(resolver.artifact("javax.jdo:jdo-api").resolveAsFiles());
         war.addAsLibraries(resolver.artifact("org.apache.geronimo.specs:geronimo-jpa_2.0_spec").resolveAsFiles());
+        war.addAsLibraries(resolver.artifact("org.easymock:easymockclassextension").resolveAsFiles());
+        war.addAsLibraries(resolver.artifact("log4j:log4j").resolveAsFiles());
         return war;
     }
 
@@ -70,6 +77,22 @@ public class AppEngineDataNucleusTransformer extends ArquillianJUnitTransformer 
                 war.addClass(current);
                 current = current.getSuperclass();
             }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    protected String tearDownSrc() {
+        return super.tearDownSrc() + "org.jboss.maven.arquillian.transformer.AppEngineDataNucleusTransformer.clean();";
+    }
+
+    // a hack to clean the DS after test
+    public static void clean() {
+        try {
+            DatastoreService ds = DatastoreServiceFactory.getDatastoreService();
+            Method clean = ds.getClass().getDeclaredMethod("clearCache"); // impl detail
+            clean.invoke(ds);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

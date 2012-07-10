@@ -138,7 +138,7 @@ public abstract class ArquillianJUnitTransformer extends JavassistTransformer {
 
         CtMethod before = new CtMethod(voidClass, "before" + random.nextInt(), new CtClass[]{}, clazz);
         before.setModifiers(Modifier.PUBLIC);
-        before.setBody("{setUp();}");
+        before.setBody("{" + setUpSrc() + "}");
         before.setExceptionTypes(new CtClass[]{exceptionClass});
         AnnotationsAttribute attr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
         String beforeClassName = Before.class.getName();
@@ -150,7 +150,7 @@ public abstract class ArquillianJUnitTransformer extends JavassistTransformer {
 
         CtMethod after = new CtMethod(voidClass, "after" + random.nextInt(), new CtClass[]{}, clazz);
         after.setModifiers(Modifier.PUBLIC);
-        after.setBody("{tearDown();}");
+        after.setBody("{" + tearDownSrc() + "}");
         after.setExceptionTypes(new CtClass[]{exceptionClass});
         attr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
         String afterClassName = After.class.getName();
@@ -159,5 +159,13 @@ public abstract class ArquillianJUnitTransformer extends JavassistTransformer {
         attr.addAnnotation(annotation);
         after.getMethodInfo().addAttribute(attr);
         clazz.addMethod(after);
+    }
+
+    protected String setUpSrc() {
+        return "setUp();";
+    }
+
+    protected String tearDownSrc() {
+        return "tearDown();";
     }
 }
