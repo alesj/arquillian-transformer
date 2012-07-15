@@ -47,9 +47,8 @@ public class AppEngineDataNucleusTransformer extends ArquillianJUnitTransformer 
         war.addPackage("com.google.appengine.datanucleus");
         if (clazz.contains(".jpa.")) {
             war.addPackage("com.google.appengine.datanucleus.test.jpa");
-        } else if (clazz.contains(".jdo.")) {
-            war.addPackage("com.google.appengine.datanucleus.test.jdo");
         }
+        war.addPackage("com.google.appengine.datanucleus.test.jdo");
         war.setWebXML(new org.jboss.shrinkwrap.api.asset.StringAsset("<web/>"));
         war.addAsWebInfResource("appengine-web.xml");
         war.addAsWebInfResource("META-INF/persistence.xml", "classes/META-INF/persistence.xml");
