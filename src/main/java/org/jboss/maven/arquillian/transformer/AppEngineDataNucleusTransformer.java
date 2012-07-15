@@ -47,6 +47,9 @@ public class AppEngineDataNucleusTransformer extends ArquillianJUnitTransformer 
         war.addPackage("com.google.appengine.datanucleus");
         if (clazz.contains(".jpa.")) {
             war.addPackage("com.google.appengine.datanucleus.test.jpa");
+            war.addClass("com.google.appengine.datanucleus.jpa.JPATestCase$EntityManagerFactoryName");
+        } else if (clazz.contains(".jdo.")) {
+            war.addClass("com.google.appengine.datanucleus.jdo.JDOTestCase$PersistenceManagerFactoryName");
         }
         war.addPackage("com.google.appengine.datanucleus.test.jdo");
         war.setWebXML(new org.jboss.shrinkwrap.api.asset.StringAsset("<web/>"));
@@ -72,12 +75,16 @@ public class AppEngineDataNucleusTransformer extends ArquillianJUnitTransformer 
         try {
             ClassLoader cl = AppEngineDataNucleusTransformer.class.getClassLoader();
             Class<?> current = cl.loadClass(clazz);
-            while (current != Object.class && "junit.framework.TestCase".equals(current.getName()) == false) {
-                war.addClass(current);
-                current = current.getSuperclass();
-            }
+            addClasses(war, current);
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private static void addClasses(WebArchive war, Class<?> current) {
+        while (current != null && current != Object.class && "junit.framework.TestCase".equals(current.getName()) == false) {
+            war.addClass(current);
+            current = current.getSuperclass();
         }
     }
 
