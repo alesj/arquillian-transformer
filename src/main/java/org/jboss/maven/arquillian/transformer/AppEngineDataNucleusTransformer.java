@@ -45,11 +45,21 @@ public class AppEngineDataNucleusTransformer extends ArquillianJUnitTransformer 
         WebArchive war = ShrinkWrap.create(WebArchive.class);
         addClasses(war, clazz);
         war.addPackage("com.google.appengine.datanucleus");
-        if (clazz.contains(".jpa.")) {
+        if (clazz.contains(".jpa.") || clazz.contains(".query.")) {
             war.addPackage("com.google.appengine.datanucleus.test.jpa");
             war.addClass("com.google.appengine.datanucleus.jpa.JPATestCase$EntityManagerFactoryName");
-        } else if (clazz.contains(".jdo.")) {
+        }
+        if (clazz.contains(".jdo.") || clazz.contains(".query.")) {
             war.addClass("com.google.appengine.datanucleus.jdo.JDOTestCase$PersistenceManagerFactoryName");
+        }
+        if (clazz.contains(".query.")) {
+            war.addClass("com.google.appengine.datanucleus.query.ApiConfigMatcher");
+            war.addClass("com.google.appengine.datanucleus.query.BookSummary");
+            war.addClass("com.google.appengine.datanucleus.query.ChunkMatcher");
+            war.addClass("com.google.appengine.datanucleus.query.FailoverMsMatcher");
+            war.addClass("com.google.appengine.datanucleus.query.FlightStartEnd1");
+            war.addClass("com.google.appengine.datanucleus.query.FlightStartEnd2");
+            war.addClass("com.google.appengine.datanucleus.query.NoQueryDelegate");
         }
         war.addPackage("com.google.appengine.datanucleus.test.jdo");
         war.setWebXML(new org.jboss.shrinkwrap.api.asset.StringAsset("<web/>"));
