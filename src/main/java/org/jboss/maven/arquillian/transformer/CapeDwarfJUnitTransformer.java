@@ -23,9 +23,15 @@
 package org.jboss.maven.arquillian.transformer;
 
 import java.lang.reflect.Modifier;
+import java.util.Random;
 
+import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
+import javassist.bytecode.AnnotationsAttribute;
+import javassist.bytecode.ClassFile;
+import javassist.bytecode.ConstPool;
+import javassist.bytecode.annotation.Annotation;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.resolver.api.DependencyResolvers;
@@ -35,12 +41,14 @@ import org.jboss.shrinkwrap.resolver.api.maven.MavenDependencyResolver;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CapeDwarfJUnitTransformer extends JavassistTransformer {
+    protected static final Random RANDOM = new Random();
+
     protected void transform(CtClass clazz) throws Exception {
         CtClass current = clazz;
         while (current != null) {
-            for (CtMethod m : current.getDeclaredMethods()) {
-                if (isDeploymentMethod(m) && shouldAddGaeLib(current, m)) {
-                    addGaeApiLib(m);
+            for (CtMethod m : current.getMethods()) {
+                if (isDeploymentMethod(m) && shouldAddGaeLib(current)) {
+                    addGaeApiLib(current, m);
                 }
             }
             current = current.getSuperclass();
@@ -48,16 +56,44 @@ public class CapeDwarfJUnitTransformer extends JavassistTransformer {
     }
 
     protected boolean isDeploymentMethod(CtMethod m) {
-        return (m.getModifiers() & Modifier.STATIC) == Modifier.STATIC && m.hasAnnotation(Deployment.class);
+        return ((m.getModifiers() & Modifier.STATIC) == Modifier.STATIC) && m.hasAnnotation(Deployment.class);
     }
 
-    protected boolean shouldAddGaeLib(CtClass clazz, CtMethod m) {
+    protected boolean shouldAddGaeLib(CtClass clazz) {
         // testsuite tests already have appengine api lib
         return clazz.getName().contains(".testsuite.") == false;
     }
 
-    protected void addGaeApiLib(CtMethod m) throws Exception {
-        // TODO
+    protected void addGaeApiLib(CtClass clazz, CtMethod m) throws Exception {
+        ClassPool pool = clazz.getClassPool();
+        ClassFile ccFile = clazz.getClassFile();
+        ConstPool constPool = ccFile.getConstPool();
+
+        // remove @Deployment annotation
+        AnnotationsAttribute attr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
+        attr.setAnnotations(new Annotation[0]);
+        m.getMethodInfo().addAttribute(attr);
+
+        // create new method with @Deployment
+        CtClass archiveClass = pool.get(WebArchive.class.getName());
+        CtMethod newDeployment = new CtMethod(archiveClass, "getDeployment_" + Math.abs(RANDOM.nextInt()), new CtClass[]{}, clazz);
+        newDeployment.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
+        newDeployment.setBody(getDeploymentMethodBody(m));
+        String deploymentClassName = Deployment.class.getName();
+        constPool.addUtf8Info(deploymentClassName);
+        attr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
+        Annotation annotation = new Annotation(deploymentClassName, constPool);
+        attr.addAnnotation(annotation);
+        newDeployment.getMethodInfo().addAttribute(attr);
+        clazz.addMethod(newDeployment);
+    }
+
+    protected String getDeploymentMethodBody(CtMethod original) {
+        return "{" +
+                "org.jboss.shrinkwrap.api.spec.WebArchive war = (org.jboss.shrinkwrap.api.spec.WebArchive) " + original.getName() + "();" +
+                "org.jboss.maven.arquillian.transformer.CapeDwarfJUnitTransformer.addGaeApiLib(war);" +
+                "return war;" +
+                "}";
     }
 
     public static void addGaeApiLib(WebArchive war) {
