@@ -66,8 +66,8 @@ public class AppEngineDataNucleusTransformer extends ArquillianJUnitTransformer 
         war.addAsWebInfResource("appengine-web.xml");
         war.addAsWebInfResource("META-INF/persistence.xml", "classes/META-INF/persistence.xml");
         war.addAsWebInfResource("META-INF/jdoconfig.xml", "classes/META-INF/jdoconfig.xml");
-        // TODO -- fix this hardcoded version
-        war.addAsLibraries(resolver.artifact("com.google.appengine.orm:datanucleus-appengine:2.1.0-final").resolveAsFiles());
+        final String version_dn_gae = System.getProperty("version.dn.gae", "2.1.0-final"); // TODO -- better way?
+        war.addAsLibraries(resolver.artifact("com.google.appengine.orm:datanucleus-appengine:" + version_dn_gae).resolveAsFiles());
         war.addAsLibraries(resolver.artifact("com.google.appengine:appengine-api-1.0-sdk").resolveAsFiles());
         war.addAsLibraries(resolver.artifact("com.google.appengine:appengine-testing").resolveAsFiles());
         war.addAsLibraries(resolver.artifact("com.google.appengine:appengine-api-stubs").resolveAsFiles());
