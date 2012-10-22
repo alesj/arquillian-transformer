@@ -23,6 +23,7 @@
 package org.jboss.maven.arquillian.transformer;
 
 import java.io.File;
+import java.util.Arrays;
 
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.jboss.shrinkwrap.resolver.api.maven.PomEquippedResolveStage;
@@ -36,6 +37,9 @@ public abstract class ShrinkWrapTransformer extends JavassistTransformer {
     }
 
     protected static File[] resolve(PomEquippedResolveStage resolver, String... coordinates) {
-        return resolver.resolve(coordinates).withoutTransitivity().as(File.class);
+        final File[] files = resolver.resolve(coordinates).withoutTransitivity().as(File.class);
+        if (files == null || files.length == 0)
+            throw new IllegalArgumentException("Null or empty files (" + Arrays.toString(files) + "): " + Arrays.toString(coordinates));
+        return files;
     }
 }
