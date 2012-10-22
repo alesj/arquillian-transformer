@@ -77,7 +77,6 @@ public class AppEngineDataNucleusTransformer extends ArquillianJUnitTransformer 
         war.addAsLibraries(resolve(resolver, "javax.jdo:jdo-api"));
         war.addAsLibraries(resolve(resolver, "org.apache.geronimo.specs:geronimo-jpa_2.0_spec"));
         war.addAsLibraries(resolve(resolver, "org.easymock:easymockclassextension"));
-        war.addAsLibraries(resolve(resolver, "log4j:log4j"));
 
         System.err.println(war.toString(true));
 
