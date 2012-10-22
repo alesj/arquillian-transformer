@@ -22,10 +22,6 @@
 
 package org.jboss.maven.arquillian.transformer;
 
-import java.lang.reflect.Method;
-
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import javassist.CtClass;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -76,9 +72,9 @@ public class AppEngineDataNucleusTransformer extends ArquillianJUnitTransformer 
         war.addAsLibraries(resolve(resolver, "org.datanucleus:datanucleus-api-jpa"));
         war.addAsLibraries(resolve(resolver, "javax.jdo:jdo-api"));
         war.addAsLibraries(resolve(resolver, "org.apache.geronimo.specs:geronimo-jpa_2.0_spec"));
+        war.addAsLibraries(resolve(resolver, "org.easymock:easymock"));
         war.addAsLibraries(resolve(resolver, "org.easymock:easymockclassextension"));
-
-        System.err.println(war.toString(true));
+        war.addAsLibraries(resolve(resolver, "org.jboss.maven.plugins:arquillian-transformer")); // cleanup dep
 
         return war;
     }
@@ -102,17 +98,6 @@ public class AppEngineDataNucleusTransformer extends ArquillianJUnitTransformer 
 
     @Override
     protected String tearDownSrc() {
-        return super.tearDownSrc() + "org.jboss.maven.arquillian.transformer.AppEngineDataNucleusTransformer.clean();";
-    }
-
-    // a hack to clean the DS after test
-    public static void clean() {
-        try {
-            DatastoreService ds = DatastoreServiceFactory.getDatastoreService();
-            Method clean = ds.getClass().getDeclaredMethod("clearCache"); // impl detail
-            clean.invoke(ds);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return "org.jboss.maven.arquillian.transformer.TestUtils.clean();" + super.tearDownSrc();
     }
 }
