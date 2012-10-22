@@ -34,13 +34,11 @@ import javassist.bytecode.ConstPool;
 import javassist.bytecode.annotation.Annotation;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.shrinkwrap.resolver.api.DependencyResolvers;
-import org.jboss.shrinkwrap.resolver.api.maven.MavenDependencyResolver;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CapeDwarfJUnitTransformer extends JavassistTransformer {
+public class CapeDwarfJUnitTransformer extends ShrinkWrapTransformer {
     protected static final Random RANDOM = new Random();
 
     protected void transform(CtClass clazz) throws Exception {
@@ -97,7 +95,6 @@ public class CapeDwarfJUnitTransformer extends JavassistTransformer {
     }
 
     public static void addGaeApiLib(WebArchive war) {
-        MavenDependencyResolver resolver = DependencyResolvers.use(MavenDependencyResolver.class).loadMetadataFromPom("pom.xml");
-        war.addAsLibraries(resolver.artifact("com.google.appengine:appengine-api-1.0-sdk").resolveAsFiles());
+        war.addAsLibraries(resolve(getResolver("pom.xml"), "com.google.appengine:appengine-api-1.0-sdk"))   ;
     }
 }

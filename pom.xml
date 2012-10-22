@@ -46,9 +46,9 @@
     </scm>
 
     <properties>
-        <version.appengine>1.7.0</version.appengine>
+        <version.appengine>1.7.2.1</version.appengine>
         <version.arquillian>1.0.0.Final</version.arquillian>
-        <version.shrinkwrap.maven-resolver>1.0.0-beta-5</version.shrinkwrap.maven-resolver>
+        <version.shrinkwrap.maven-resolver>2.0.0-alpha-4</version.shrinkwrap.maven-resolver>
         <version.javassist>3.15.0-GA</version.javassist>
         <version.junit>4.10</version.junit>
     </properties>

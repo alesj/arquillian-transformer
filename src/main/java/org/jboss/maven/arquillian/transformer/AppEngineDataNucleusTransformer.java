@@ -29,8 +29,7 @@ import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import javassist.CtClass;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.shrinkwrap.resolver.api.DependencyResolvers;
-import org.jboss.shrinkwrap.resolver.api.maven.MavenDependencyResolver;
+import org.jboss.shrinkwrap.resolver.api.maven.PomEquippedResolveStage;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -41,7 +40,6 @@ public class AppEngineDataNucleusTransformer extends ArquillianJUnitTransformer 
     }
 
     public static WebArchive buildArchive(String clazz) {
-        MavenDependencyResolver resolver = DependencyResolvers.use(MavenDependencyResolver.class).loadMetadataFromPom("pom.xml");
         WebArchive war = ShrinkWrap.create(WebArchive.class);
         addClasses(war, clazz);
         war.addPackage("com.google.appengine.datanucleus");
@@ -66,18 +64,23 @@ public class AppEngineDataNucleusTransformer extends ArquillianJUnitTransformer 
         war.addAsWebInfResource("appengine-web.xml");
         war.addAsWebInfResource("META-INF/persistence.xml", "classes/META-INF/persistence.xml");
         war.addAsWebInfResource("META-INF/jdoconfig.xml", "classes/META-INF/jdoconfig.xml");
-        final String version_dn_gae = System.getProperty("version.dn.gae", "2.1.0-final"); // TODO -- better way?
-        war.addAsLibraries(resolver.artifact("com.google.appengine.orm:datanucleus-appengine:" + version_dn_gae).resolveAsFiles());
-        war.addAsLibraries(resolver.artifact("com.google.appengine:appengine-api-1.0-sdk").resolveAsFiles());
-        war.addAsLibraries(resolver.artifact("com.google.appengine:appengine-testing").resolveAsFiles());
-        war.addAsLibraries(resolver.artifact("com.google.appengine:appengine-api-stubs").resolveAsFiles());
-        war.addAsLibraries(resolver.artifact("org.datanucleus:datanucleus-core").resolveAsFiles());
-        war.addAsLibraries(resolver.artifact("org.datanucleus:datanucleus-api-jdo").resolveAsFiles());
-        war.addAsLibraries(resolver.artifact("org.datanucleus:datanucleus-api-jpa").resolveAsFiles());
-        war.addAsLibraries(resolver.artifact("javax.jdo:jdo-api").resolveAsFiles());
-        war.addAsLibraries(resolver.artifact("org.apache.geronimo.specs:geronimo-jpa_2.0_spec").resolveAsFiles());
-        war.addAsLibraries(resolver.artifact("org.easymock:easymockclassextension").resolveAsFiles());
-        war.addAsLibraries(resolver.artifact("log4j:log4j").resolveAsFiles());
+
+        final PomEquippedResolveStage resolver = getResolver("pom.xml");
+        final String version_dn_gae = System.getProperty("version.dn.gae", "2.1.2-SNAPSHOT"); // TODO -- better way?
+        war.addAsLibraries(resolve(resolver, "com.google.appengine.orm:datanucleus-appengine:" + version_dn_gae));
+        war.addAsLibraries(resolve(resolver, "com.google.appengine:appengine-api-1.0-sdk"));
+        war.addAsLibraries(resolve(resolver, "com.google.appengine:appengine-testing"));
+        war.addAsLibraries(resolve(resolver, "com.google.appengine:appengine-api-stubs"));
+        war.addAsLibraries(resolve(resolver, "org.datanucleus:datanucleus-core"));
+        war.addAsLibraries(resolve(resolver, "org.datanucleus:datanucleus-api-jdo"));
+        war.addAsLibraries(resolve(resolver, "org.datanucleus:datanucleus-api-jpa"));
+        war.addAsLibraries(resolve(resolver, "javax.jdo:jdo-api"));
+        war.addAsLibraries(resolve(resolver, "org.apache.geronimo.specs:geronimo-jpa_2.0_spec"));
+        war.addAsLibraries(resolve(resolver, "org.easymock:easymockclassextension"));
+        war.addAsLibraries(resolve(resolver, "log4j:log4j"));
+
+        System.err.println(war.toString(true));
+
         return war;
     }
 

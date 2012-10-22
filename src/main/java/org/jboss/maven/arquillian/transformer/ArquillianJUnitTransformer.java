@@ -44,7 +44,7 @@ import org.junit.runner.RunWith;
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class ArquillianJUnitTransformer extends JavassistTransformer {
+public abstract class ArquillianJUnitTransformer extends ShrinkWrapTransformer {
     protected void transform(CtClass clazz) throws Exception {
         addRunWithArquillian(clazz);
         addDeploymentMethod(clazz);
