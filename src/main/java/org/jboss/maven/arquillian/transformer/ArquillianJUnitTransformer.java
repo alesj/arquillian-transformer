@@ -45,6 +45,11 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public abstract class ArquillianJUnitTransformer extends ShrinkWrapTransformer {
+
+    protected boolean isAlreadyTransformed(CtClass clazz) throws Exception {
+        return clazz.hasAnnotation(RunWith.class);
+    }
+
     protected void transform(CtClass clazz) throws Exception {
         addRunWithArquillian(clazz);
         addDeploymentMethod(clazz);

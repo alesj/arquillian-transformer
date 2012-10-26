@@ -41,6 +41,10 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 public class CapeDwarfJUnitTransformer extends ShrinkWrapTransformer {
     protected static final Random RANDOM = new Random();
 
+    protected boolean isAlreadyTransformed(CtClass clazz) throws Exception {
+        return false;
+    }
+
     protected void transform(CtClass clazz) throws Exception {
         CtClass current = clazz;
         while (current != null) {

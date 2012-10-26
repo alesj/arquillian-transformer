@@ -43,13 +43,19 @@ public abstract class JavassistTransformer implements ClassFileTransformer {
             ClassPool pool = new ClassPool();
             pool.appendClassPath(new LoaderClassPath(loader));
             CtClass clazz = pool.makeClass(new ByteArrayInputStream(classfileBuffer));
-            log.info("Transforming " + className + " with " + getClass().getSimpleName());
-            transform(clazz);
+            if (isAlreadyTransformed(clazz) == false) {
+                log.info("Transforming " + className + " with " + getClass().getSimpleName());
+                transform(clazz);
+            } else {
+                log.fine(className + " is already transformed with " + getClass().getSimpleName());
+            }
             return clazz.toBytecode();
         } catch (Exception e) {
             throw new IllegalClassFormatException(e.getMessage());
         }
     }
+
+    protected abstract boolean isAlreadyTransformed(CtClass clazz) throws Exception;
 
     protected abstract void transform(CtClass clazz) throws Exception;
 }
