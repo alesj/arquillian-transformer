@@ -35,6 +35,7 @@ import javassist.bytecode.annotation.Annotation;
 import javassist.bytecode.annotation.ClassMemberValue;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Before;
@@ -85,6 +86,11 @@ public abstract class ArquillianJUnitTransformer extends ShrinkWrapTransformer {
         m.setBody(getDeploymentMethodBody(clazz));
 
         clazz.addMethod(m);
+    }
+
+    protected static WebArchive createWar() {
+        final String archiveName = System.getProperty("archive.name");
+        return (archiveName != null) ? ShrinkWrap.create(WebArchive.class, archiveName) : ShrinkWrap.create(WebArchive.class);
     }
 
     protected abstract String getDeploymentMethodBody(CtClass clazz) throws Exception;

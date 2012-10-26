@@ -23,7 +23,6 @@
 package org.jboss.maven.arquillian.transformer;
 
 import javassist.CtClass;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 /**
@@ -35,7 +34,7 @@ public class AppEngineTransformer extends ArquillianJUnitTransformer {
     }
 
     public static WebArchive buildArchive() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class);
+        WebArchive war = createWar();
         war.setWebXML(new org.jboss.shrinkwrap.api.asset.StringAsset("<web/>"));
         war.addAsWebInfResource("appengine-web.xml");
         return war;

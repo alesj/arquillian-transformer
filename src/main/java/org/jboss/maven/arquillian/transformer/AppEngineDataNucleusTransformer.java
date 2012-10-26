@@ -23,7 +23,6 @@
 package org.jboss.maven.arquillian.transformer;
 
 import javassist.CtClass;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.PomEquippedResolveStage;
@@ -37,7 +36,7 @@ public class AppEngineDataNucleusTransformer extends ArquillianJUnitTransformer 
     }
 
     public static WebArchive buildArchive(String clazz) {
-        WebArchive war = ShrinkWrap.create(WebArchive.class);
+        WebArchive war = createWar();
         addClasses(war, clazz);
         war.addPackage("com.google.appengine.datanucleus");
         if (clazz.contains(".jpa.") || clazz.contains(".query.")) {
