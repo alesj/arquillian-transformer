@@ -51,6 +51,7 @@ public class AppEngineDataNucleusTransformer extends ArquillianJUnitTransformer 
             war.addClass("com.google.appengine.datanucleus.query.BookSummary");
             war.addClass("com.google.appengine.datanucleus.query.ChunkMatcher");
             war.addClass("com.google.appengine.datanucleus.query.FailoverMsMatcher");
+            war.addClass("com.google.appengine.datanucleus.query.KeysOnlyMatcher");
             war.addClass("com.google.appengine.datanucleus.query.FlightStartEnd1");
             war.addClass("com.google.appengine.datanucleus.query.FlightStartEnd2");
             war.addClass("com.google.appengine.datanucleus.query.NoQueryDelegate");
