@@ -24,6 +24,7 @@ package org.jboss.maven.arquillian.transformer;
 
 import javassist.CtClass;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.PomEquippedResolveStage;
 
@@ -61,6 +62,7 @@ public class AppEngineDataNucleusTransformer extends ArquillianJUnitTransformer 
         war.addAsWebInfResource("appengine-web.xml");
         war.addAsWebInfResource("META-INF/persistence.xml", "classes/META-INF/persistence.xml");
         war.addAsWebInfResource("META-INF/jdoconfig.xml", "classes/META-INF/jdoconfig.xml");
+        war.addAsResource(new StringAsset("ignore.logging=true\n"), "capedwarf-compatibility.properties");
 
         final PomEquippedResolveStage resolver = getResolver("pom.xml");
         final String version_dn_gae = System.getProperty("version.dn.gae", "2.1.2-SNAPSHOT"); // TODO -- better way?
