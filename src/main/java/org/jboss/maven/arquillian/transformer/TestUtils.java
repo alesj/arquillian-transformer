@@ -37,7 +37,7 @@ public class TestUtils {
     public static void clean() {
         try {
             DatastoreService ds = DatastoreServiceFactory.getDatastoreService();
-            Method clean = ds.getClass().getDeclaredMethod("clearCache"); // impl detail
+            Method clean = ds.getClass().getMethod("clearCache"); // impl detail
             clean.invoke(ds);
         } catch (Exception e) {
             throw new RuntimeException(e);
